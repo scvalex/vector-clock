@@ -1,0 +1,12 @@
+vector-clock
+
+* Planned changes
+** [/] Big
+   - [ ] O(1) everything
+   - [ ] Low-level optimised code
+** [0/2] Medium
+   - [ ] Approximate vector clocks
+   - [ ] Bounded vector clocks
+** [0/2]Small
+   - [ ] VectorClock.diff
+   - [ ] VectorClock.relation

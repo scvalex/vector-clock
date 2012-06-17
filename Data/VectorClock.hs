@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module Data.VectorClock (
         -- * Vector clock type
         VectorClock,
@@ -8,13 +10,15 @@ module Data.VectorClock (
         -- * Insertion
         insert,
         -- * Delete
-        delete
+        delete,
+        -- * Merges
+        combine, max
     ) where
 
-import Prelude hiding ( null, lookup )
+import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
-import Data.Maybe ( isJust )
+import Data.Maybe ( isJust, catMaybes )
 
 -- | A vector clock is, conceptually, an associtive list sorted by the
 -- value of the key, where each key appears only once.
@@ -69,3 +73,29 @@ insert x y vc =
         | x' < x    = xy : go xys
         | x' == x   = (x, y) : xys
         | otherwise = xy : xys
+
+-- | Combine two vector clocks entry-by-entry.
+combine :: (Ord a, Ord b)
+        => (a -> Maybe b -> Maybe b -> Maybe b)
+        -> VectorClock a b
+        -> VectorClock a b
+        -> VectorClock a b
+combine f vc1 vc2 =
+    VectorClock { clock = catMaybes (go (clock vc1) (clock vc2)) }
+  where
+    (~^) x v = v >>= return . (x,)
+    go [] xys = map (\(x, y) -> (x ~^ f x Nothing (Just y))) xys
+    go xys [] = map (\(x, y) -> (x ~^ f x (Just y) Nothing)) xys
+    go (xy@(x, y) : xys) (xy'@(x', y') : xys')
+        | x < x'    = (x ~^ f x (Just y) Nothing) : go xys (xy' : xys')
+        | x == x'   = (x ~^ f x (Just y) (Just y')) : go xys xys'
+        | otherwise = (x' ~^ f x' Nothing (Just y')) : go (xy : xys) xys'
+
+-- | The maximum of the two vector clocks.
+max :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> VectorClock a b
+max = combine maxEntry
+  where
+    maxEntry _ Nothing Nothing    = Nothing
+    maxEntry _ x@(Just _) Nothing = x
+    maxEntry _ Nothing y@(Just _) = y
+    maxEntry _ (Just x) (Just y)  = Just (Prelude.max x y)
