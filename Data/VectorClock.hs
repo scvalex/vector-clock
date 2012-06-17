@@ -4,7 +4,11 @@ module Data.VectorClock (
         -- * Construction
         empty, singleton,
         -- * Query
-        null, size, member, lookup
+        null, size, member, lookup,
+        -- * Insertion
+        insert,
+        -- * Delete
+        delete
     ) where
 
 import Prelude hiding ( null, lookup )
@@ -37,3 +41,14 @@ member x = isJust . Prelude.lookup x . clock
 -- | Lookup the value for a key in the vector clock.
 lookup :: (Eq a, Ord b) => a -> VectorClock a b -> Maybe b
 lookup x = Prelude.lookup x . clock
+
+-- | Delete an entry from the vector clock.  If the requested entry
+-- does not exist, does nothing.
+delete :: (Eq a, Ord b) => a -> VectorClock a b -> VectorClock a b
+delete x vc = vc { clock = filter (\(x', _) -> x' /= x) (clock vc) }
+
+-- | Insert or replace the entry for a key.
+insert :: (Eq a, Ord b) => a -> b -> VectorClock a b -> VectorClock a b
+insert x y vc =
+    let vc' = delete x vc in
+    vc' { clock = (x, y) : clock vc' }
