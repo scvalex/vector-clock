@@ -1,7 +1,7 @@
 vector-clock
 ========
 
-> Implementation of vector clocks in Haskell
+> Vector clocks in Haskell
 
 
 Examples
