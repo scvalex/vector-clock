@@ -33,6 +33,10 @@ main = defaultMainWithOpts
                                }
            }
 
+--------------------------------
+-- Unit tests
+--------------------------------
+
 testSize :: Assertion
 testSize = do
   null empty             @?= True
@@ -40,8 +44,12 @@ testSize = do
 
 testSize2 :: Assertion
 testSize2 = do
-    size empty                                   @?= 0
-    size (singleton 'a' 1)                       @?= 1
+    size empty             @?= 0
+    size (singleton 'a' 1) @?= 1
+
+--------------------------------
+-- QuickCheck properties
+--------------------------------
 
 propFromList :: VC -> Bool
 propFromList vc = valid vc
