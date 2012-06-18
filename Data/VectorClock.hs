@@ -9,12 +9,12 @@ module Data.VectorClock (
         null, size, member, lookup,
         -- * Insertion
         insert,
-        -- * Delete
+        -- * Deletion
         delete,
         -- * Merges
         combine, max,
         -- * Relations
-        relation,
+        Relation(..), relation,
         -- * Debugging
         valid
     ) where
