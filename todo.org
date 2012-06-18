@@ -4,10 +4,12 @@ vector-clock
 ** [/] Big
    - [ ] O(1) everything
    - [ ] Low-level optimised code
-** [0/2] Medium
+** [0/3] Medium
    - [ ] Approximate vector clocks
    - [ ] Bounded vector clocks
-** [1/3]Small
+   - [ ] See what safe Haskell is
+** [1/4]Small
+   - [ ] Write down complexity in docs
    - [ ] VectorClock.diff
    - [X] VectorClock.relation
    - [ ] VectorClock.fold2

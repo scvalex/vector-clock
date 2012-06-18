@@ -25,13 +25,13 @@ import Data.Maybe ( isJust, catMaybes )
 
 -- | A vector clock is, conceptually, an associtive list sorted by the
 -- value of the key, where each key appears only once.
-data (Ord a, Ord b) => VectorClock a b = VectorClock { clock :: [(a, b)] }
-                                         deriving ( Eq )
+data VectorClock a b = VectorClock { clock :: [(a, b)] }
+                       deriving ( Eq )
 
-instance (Show a, Ord a, Show b, Ord b) => Show (VectorClock a b) where
+instance (Show a, Show b) => Show (VectorClock a b) where
     show vc = show (clock vc)
 
-instance (Binary a, Ord a, Binary b, Ord b) => Binary (VectorClock a b) where
+instance (Binary a, Binary b) => Binary (VectorClock a b) where
     put vc = undefined
     get = undefined
 
