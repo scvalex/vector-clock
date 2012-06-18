@@ -7,6 +7,7 @@ import Prelude hiding ( null )
 import Data.Binary ( encode, decode )
 import Data.Monoid
 import Data.VectorClock
+
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2
