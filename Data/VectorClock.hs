@@ -12,7 +12,9 @@ module Data.VectorClock (
         -- * Delete
         delete,
         -- * Merges
-        combine, max
+        combine, max,
+        -- * Relations
+        relation
     ) where
 
 import Prelude hiding ( null, lookup, max )
@@ -23,6 +25,14 @@ import Data.Maybe ( isJust, catMaybes )
 -- | A vector clock is, conceptually, an associtive list sorted by the
 -- value of the key, where each key appears only once.
 data (Ord a, Ord b) => VectorClock a b = VectorClock { clock :: [(a, b)] }
+                                         deriving ( Eq )
+
+instance (Show a, Ord a, Show b, Ord b) => Show (VectorClock a b) where
+    show vc = show (clock vc)
+
+-- | The relations two vector clocks may find themselves in.
+data Relation = Causes | CausedBy | Concurrent
+                deriving (Eq, Show)
 
 -- | The empty vector clock.
 empty :: (Ord a, Ord b) => VectorClock a b
@@ -83,13 +93,14 @@ combine :: (Ord a, Ord b)
 combine f vc1 vc2 =
     VectorClock { clock = catMaybes (go (clock vc1) (clock vc2)) }
   where
-    (~^) x v = v >>= return . (x,)
     go [] xys = map (\(x, y) -> (x ~^ f x Nothing (Just y))) xys
     go xys [] = map (\(x, y) -> (x ~^ f x (Just y) Nothing)) xys
     go (xy@(x, y) : xys) (xy'@(x', y') : xys')
-        | x < x'    = (x ~^ f x (Just y) Nothing) : go xys (xy' : xys')
-        | x == x'   = (x ~^ f x (Just y) (Just y')) : go xys xys'
-        | otherwise = (x' ~^ f x' Nothing (Just y')) : go (xy : xys) xys'
+        | x < x'     = (x ~^ f x (Just y) Nothing) : go xys (xy' : xys')
+        | x == x'    = (x ~^ f x (Just y) (Just y')) : go xys xys'
+        | otherwise  = (x' ~^ f x' Nothing (Just y')) : go (xy : xys) xys'
+
+    (~^) x v = v >>= return . (x,)
 
 -- | The maximum of the two vector clocks.
 max :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> VectorClock a b
@@ -99,3 +110,28 @@ max = combine maxEntry
     maxEntry _ x@(Just _) Nothing = x
     maxEntry _ Nothing y@(Just _) = y
     maxEntry _ (Just x) (Just y)  = Just (Prelude.max x y)
+
+-- | The relation between the two vector clocks.
+relation :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Relation
+relation vc1 vc2 = go (clock vc1) (clock vc2)
+  where
+    go [] _ = Concurrent
+    go _ [] = Concurrent
+    go (xy@(x, y) : xys) (xy'@(x', y') : xys')
+        | x < x'    = go xys (xy' : xys')
+        | x == x'   = (if y < y' then checkCausedBy else checkCauses) xys xys'
+        | otherwise = go (xy : xys) xys'
+
+    checkCauses _ [] = Causes
+    checkCauses [] _ = Causes
+    checkCauses (xy@(x, y) : xys) (xy'@(x', y') : xys')
+        | x < x'    = checkCauses xys (xy' : xys')
+        | x == x'   = if y > y' then checkCauses xys xys' else Concurrent
+        | otherwise = checkCauses (xy : xys) xys'
+
+    checkCausedBy _ [] = CausedBy
+    checkCausedBy [] _ = CausedBy
+    checkCausedBy (xy@(x, y) : xys) (xy'@(x', y') : xys')
+        | x < x'    = checkCauses xys (xy' : xys')
+        | x == x'   = if y < y' then checkCauses xys xys' else Concurrent
+        | otherwise = checkCauses (xy : xys) xys'
