@@ -16,8 +16,8 @@ Description:
         be used to version messages and determine causality relations
         between messages in a distributed system.
         .
-        See /Fundamentals of Distributed Computing: A Practical Tour
-        of Vector Clock Systems/ by Baldoni and Raynal for an overview
+        See "Fundamentals of Distributed Computing: A Practical Tour
+        of Vector Clock Systems" by Baldoni and Raynal for an overview
         of vector clocks.
         .
         See the README.md file for details.

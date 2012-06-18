@@ -9,7 +9,9 @@ vector-clock
    - [ ] Bounded vector clocks
    - [ ] See what safe Haskell is
    - [ ] Tests for all VectorClock functions
-** [1/4]Small
+** [1/6]Small
+   - [ ] Usage example in README
+   - [ ] Usage example in VectorClock
    - [ ] Write down complexity in docs
    - [ ] VectorClock.diff
    - [X] VectorClock.relation
