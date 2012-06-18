@@ -31,6 +31,6 @@ Source-repository head
   Location:             git://github.com/scvalex/vector-clock.git
 
 Library
-  Build-Depends:         base >= 4 && <5
+  Build-Depends:         base >= 4 && <5, binary
   Ghc-options:           -Wall
   Exposed-modules:       Data.VectorClock

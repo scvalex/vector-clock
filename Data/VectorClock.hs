@@ -20,6 +20,7 @@ module Data.VectorClock (
 import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
+import Data.Binary ( Binary(..) )
 import Data.Maybe ( isJust, catMaybes )
 
 -- | A vector clock is, conceptually, an associtive list sorted by the
@@ -29,6 +30,10 @@ data (Ord a, Ord b) => VectorClock a b = VectorClock { clock :: [(a, b)] }
 
 instance (Show a, Ord a, Show b, Ord b) => Show (VectorClock a b) where
     show vc = show (clock vc)
+
+instance (Binary a, Ord a, Binary b, Ord b) => Binary (VectorClock a b) where
+    put vc = undefined
+    get = undefined
 
 -- | The relations two vector clocks may find themselves in.
 data Relation = Causes | CausedBy | Concurrent
