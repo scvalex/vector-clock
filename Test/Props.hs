@@ -1,22 +1,29 @@
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans -fno-warn-type-defaults #-}
 
 module Main where
 
 import Prelude hiding ( null )
 
+import Data.Binary ( encode, decode )
 import Data.Monoid
 import Data.VectorClock
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2
-import Test.QuickCheck
 import Test.HUnit
+import Test.QuickCheck
 
-default (Int)
+type VC = VectorClock Char Int
+
+instance (Arbitrary a, Ord a, Arbitrary b) => Arbitrary (VectorClock a b) where
+    arbitrary = arbitrary >>= return . fromList
 
 main :: IO ()
 main = defaultMainWithOpts
-       [ testCase "size" test_size
+       [ testCase "size"  testSize
+       , testCase "size2" testSize2
+       , testProperty "fromList" propFromList
+       , testProperty "binaryId" propBinaryId
        ] opts
   where
     opts = mempty {
@@ -26,7 +33,18 @@ main = defaultMainWithOpts
                                }
            }
 
-test_size :: Assertion
-test_size = do
+testSize :: Assertion
+testSize = do
   null empty             @?= True
-  null (singleton 1 'a') @?= False
+  null (singleton 'a' 1) @?= False
+
+testSize2 :: Assertion
+testSize2 = do
+    size empty                                   @?= 0
+    size (singleton 'a' 1)                       @?= 1
+
+propFromList :: VC -> Bool
+propFromList vc = valid vc
+
+propBinaryId :: VC -> Bool
+propBinaryId vc = vc == decode (encode vc)

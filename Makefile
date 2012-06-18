@@ -1,6 +1,6 @@
 .PHONY: all build dist install test clean doc
 
-all: build
+all: build test
 
 build: dist/setup-config
 	cabal build

@@ -4,7 +4,7 @@ module Data.VectorClock (
         -- * Vector clock type
         VectorClock,
         -- * Construction
-        empty, singleton,
+        empty, singleton, fromList,
         -- * Query
         null, size, member, lookup,
         -- * Insertion
@@ -14,13 +14,16 @@ module Data.VectorClock (
         -- * Merges
         combine, max,
         -- * Relations
-        relation
+        relation,
+        -- * Debugging
+        valid
     ) where
 
 import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
 import Data.Binary ( Binary(..) )
+import Data.List ( foldl', sort, nub )
 import Data.Maybe ( isJust, catMaybes )
 
 -- | A vector clock is, conceptually, an associtive list sorted by the
@@ -46,6 +49,10 @@ empty = VectorClock { clock = [] }
 -- | A vector clock with a single element.
 singleton :: a -> b -> VectorClock a b
 singleton x y = VectorClock { clock = [(x, y)] }
+
+-- | Insert each entry in the list one at a time.
+fromList :: (Ord a) => [(a, b)] -> VectorClock a b
+fromList = foldl' (\vc (x, y) -> insert x y vc) empty
 
 -- | Is the vector clock empty?
 null :: VectorClock a b -> Bool
@@ -140,3 +147,10 @@ relation vc1 vc2 = go (clock vc1) (clock vc2)
         | x < x'    = checkCauses xys (xy' : xys')
         | x == x'   = if y < y' then checkCauses xys xys' else Concurrent
         | otherwise = checkCauses (xy : xys) xys'
+
+-- | Check whether the vector clock is valid or not.
+valid :: (Ord a, Ord b) => VectorClock a b -> Bool
+valid vc = let xys = clock vc
+               xysSorted = sort xys
+               xysNub = nub xys
+           in xys == xysSorted && xys == xysNub
