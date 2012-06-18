@@ -32,8 +32,8 @@ instance (Show a, Show b) => Show (VectorClock a b) where
     show vc = show (clock vc)
 
 instance (Binary a, Binary b) => Binary (VectorClock a b) where
-    put vc = undefined
-    get = undefined
+    put vc = put (clock vc)
+    get = get >>= \xys -> return (VectorClock { clock = xys })
 
 -- | The relations two vector clocks may find themselves in.
 data Relation = Causes | CausedBy | Concurrent
