@@ -1,6 +1,6 @@
 Name:           vector-clock
-Version:        0.0.1
-Cabal-Version:  >= 1.6
+Version:        0.1.0
+Cabal-Version:  >= 1.8
 License:        GPL-3
 License-File:   LICENSE
 Stability:      experimental
@@ -9,7 +9,7 @@ Maintainer:     scvalex@gmail.com
 Homepage:       https://github.com/scvalex/vector-clock
 Category:       Data, Data Structures, Distributed Computing
 Synopsis:       Vector clocks for versioning message flows
-Build-type:     Simple
+Build-Type:     Simple
 Description:
         The vector-clocks library provides a ready to use
         implementation of the vector clock data-structures, which may
@@ -22,15 +22,27 @@ Description:
         .
         See the README.md file for details.
 
-Extra-source-files:     Makefile
+Extra-Source-Files:     Makefile,
+                        Test/QC.hs
 
-Data-files:             README.md, NEWS.md
+Data-Files:             README.md, NEWS.md
 
 Source-repository head
   Type:                 git
   Location:             git://github.com/scvalex/vector-clock.git
 
 Library
-  Build-Depends:         base >= 4 && <5, binary
-  Ghc-options:           -Wall
-  Exposed-modules:       Data.VectorClock
+  Build-Depends:        base >= 4 && <5, binary
+  Ghc-Options:          -Wall -O2
+  Exposed-Modules:      Data.VectorClock
+
+Test-suite props
+  Hs-Source-Dirs:       Test, .
+  Main-Is:              Props.hs
+  Type:                 exitcode-stdio-1.0
+
+  Build-Depends:        base >= 4 && <5, binary
+  Ghc-Options:          -Wall -O2
+
+  Build-Depends:        test-framework, test-framework-quickcheck2,
+                        test-framework-hunit, QuickCheck, HUnit

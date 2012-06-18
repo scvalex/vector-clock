@@ -1,6 +1,4 @@
-GHC := ghc -Wall -Werror
-
-.PHONY: all build dist install clean doc
+.PHONY: all build dist install test clean doc
 
 all: build
 
@@ -13,11 +11,14 @@ dist: test
 install: build
 	cabal install
 
+test: build
+	cabal test
+
 clean:
 	cabal clean
 
 dist/setup-config: vector-clock.cabal
-	cabal configure
+	cabal configure --enable-tests
 
 doc: build
 	cabal haddock
