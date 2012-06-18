@@ -11,7 +11,7 @@ Category:       Data, Data Structures, Distributed Computing
 Synopsis:       Vector clocks for versioning message flows
 Build-Type:     Simple
 Description:
-        The vector-clocks library provides a ready to use
+        The vector-clock library provides a ready to use
         implementation of the vector clock data-structures, which may
         be used to version messages and determine causality relations
         between messages in a distributed system.
