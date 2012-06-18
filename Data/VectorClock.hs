@@ -40,24 +40,24 @@ data Relation = Causes | CausedBy | Concurrent
                 deriving (Eq, Show)
 
 -- | The empty vector clock.
-empty :: (Ord a, Ord b) => VectorClock a b
+empty :: VectorClock a b
 empty = VectorClock { clock = [] }
 
 -- | A vector clock with a single element.
-singleton :: (Ord a, Ord b) => a -> b -> VectorClock a b
+singleton :: a -> b -> VectorClock a b
 singleton x y = VectorClock { clock = [(x, y)] }
 
 -- | Is the vector clock empty?
-null :: (Ord a, Ord b) => VectorClock a b -> Bool
+null :: VectorClock a b -> Bool
 null = Prelude.null . clock
 
 -- | The number of entries in the vector clock.
-size :: (Ord a, Ord b) => VectorClock a b -> Int
+size :: VectorClock a b -> Int
 size = length . clock
 
 -- | Lookup the value for a key in the vector clock and remove the
 -- corresponding entry.
-extract :: (Ord a, Ord b) => a -> VectorClock a b -> (Maybe b, VectorClock a b)
+extract :: (Ord a) => a -> VectorClock a b -> (Maybe b, VectorClock a b)
 extract x vc =
     case span (\(x', _) -> x' < x) (clock vc) of
       (_, [])                    -> (Nothing, vc)
@@ -65,20 +65,20 @@ extract x vc =
                                     , vc { clock = xys ++ xys' } )
 
 -- | Lookup the value for a key in the vector clock.
-lookup :: (Ord a, Ord b) => a -> VectorClock a b -> Maybe b
+lookup :: (Ord a) => a -> VectorClock a b -> Maybe b
 lookup x = fst . extract x
 
 -- | Is the given key a key in an entry of the vector clock?
-member :: (Ord a, Ord b) => a -> VectorClock a b -> Bool
+member :: (Ord a) => a -> VectorClock a b -> Bool
 member x = isJust . lookup x
 
 -- | Delete an entry from the vector clock.  If the requested entry
 -- does not exist, does nothing.
-delete :: (Ord a, Ord b) => a -> VectorClock a b -> VectorClock a b
+delete :: (Ord a) => a -> VectorClock a b -> VectorClock a b
 delete x = snd . extract x
 
 -- | Insert or replace the entry for a key.
-insert :: (Ord a, Ord b) => a -> b -> VectorClock a b -> VectorClock a b
+insert :: (Ord a) => a -> b -> VectorClock a b -> VectorClock a b
 insert x y vc =
     let xys' = go (clock vc)
     in vc { clock = reverse xys' }
