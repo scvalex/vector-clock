@@ -22,8 +22,7 @@ Description:
         .
         See the README.md file for details.
 
-Extra-Source-Files:     Makefile,
-                        Test/Props.hs
+Extra-Source-Files:     Makefile
 
 Data-Files:             README.md, NEWS.md
 
