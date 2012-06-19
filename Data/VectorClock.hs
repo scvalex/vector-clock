@@ -133,9 +133,11 @@ relation vc1 vc2 = go (clock vc1) (clock vc2)
     go (xy@(x, y) : xys) (xy'@(x', y') : xys')
         | x < x'    = go xys (xy' : xys')
         | x == x'   =
-            if y < y'
-            then if checkCauses xys' xys then CausedBy else Concurrent
-            else if checkCauses xys xys' then Causes else Concurrent
+            if y == y'
+            then go xys xys'
+            else if y < y'
+                 then if checkCauses xys xys' then Causes else Concurrent
+                 else if checkCauses xys' xys then CausedBy else Concurrent
         | otherwise = go (xy : xys) xys'
 
     checkCauses _ [] = True

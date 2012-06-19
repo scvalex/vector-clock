@@ -2,7 +2,7 @@
 
 module Main where
 
-import Prelude hiding ( null, lookup )
+import Prelude hiding ( null, lookup, max )
 
 import Data.Binary ( encode, decode )
 import Data.Monoid
@@ -29,14 +29,16 @@ main = defaultMainWithOpts
        , testCase "delete" testDelete
        , testProperty "fromList" propFromList
        , testProperty "binaryId" propBinaryId
+       , testProperty "maxNotCauses" propMaxNotCauses
+       , testProperty "relationInverse" propRelationInverse
        ] opts
   where
     opts = mempty {
              ropt_test_options =
-                 Just $ mempty { topt_maximum_generated_tests = Just 500
-                               , topt_maximum_unsuitable_generated_tests = Just 500
-                               }
-           }
+                 Just (mempty
+                       { topt_maximum_generated_tests            = Just 100
+                       , topt_maximum_unsuitable_generated_tests = Just 5000
+                       })}
 
 --------------------------------
 -- Unit tests
@@ -90,3 +92,21 @@ propFromList vc = valid vc
 
 propBinaryId :: VC -> Bool
 propBinaryId vc = vc == decode (encode vc)
+
+-- @max vc1 vc2@ does not cause either @vc1@ or @vc2@
+propMaxNotCauses :: VC -> VC -> Bool
+propMaxNotCauses vc1 vc2 =
+    let vcMax = max vc1 vc2 in
+    relation vcMax vc1 /= Causes &&
+    relation vcMax vc2 /= Causes &&
+    relation vc1 vcMax /= CausedBy &&
+    relation vc2 vcMax /= CausedBy
+
+-- vc1 causes vc2 iff vc2 is caused by vc1
+propRelationInverse :: VC -> VC -> Property
+propRelationInverse vc1 vc2 =
+    let rel = relation vc1 vc2 in
+    rel `elem` [Causes, CausedBy] ==>
+    if rel == Causes
+    then relation vc2 vc1 == CausedBy
+    else relation vc2 vc1 == Causes
