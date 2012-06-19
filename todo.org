@@ -9,11 +9,12 @@ vector-clock
    - [ ] Bounded vector clocks
    - [ ] See what safe Haskell is
    - [ ] Tests for all VectorClock functions
-** [1/6]Small
+** [2/8]Small
    - [ ] Usage example in README
    - [ ] Usage example in VectorClock
    - [ ] Write down complexity in docs
    - [ ] VectorClock.diff
    - [X] VectorClock.relation
    - [ ] VectorClock.fold2
-   - [ ] VectorClock.inc
+   - [X] VectorClock.inc
+   - [ ] Not just maybe

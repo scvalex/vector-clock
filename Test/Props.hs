@@ -5,6 +5,7 @@ module Main where
 import Prelude hiding ( null, lookup, max )
 
 import Data.Binary ( encode, decode )
+import Data.Maybe ( fromJust )
 import Data.Monoid
 import Data.VectorClock
 
@@ -26,6 +27,7 @@ main = defaultMainWithOpts
        , testCase "member" testMember
        , testCase "lookup" testLookup
        , testCase "insert" testInsert
+       , testCase "inc" testInc
        , testCase "delete" testDelete
        , testProperty "fromList" propFromList
        , testProperty "binaryId" propBinaryId
@@ -72,6 +74,15 @@ testInsert = do
     insert 'a' 1 (insert 'b' 2 empty) @?= fromList [('a', 1), ('b', 2)]
     insert 'b' 2 (insert 'a' 1 empty) @?= fromList [('b', 2), ('a', 1)]
     insert 'a' 1 (insert 'b' 2 empty) @?= fromList [('b', 2), ('a', 1)]
+    insert 'a' 2 (insert 'a' 1 empty) @?= fromList [('a', 2)]
+
+testInc :: Assertion
+testInc = do
+    let vc = fromList [('a', 1), ('b', 2)]
+    inc 'a' vc @?= Just (fromList [('a', 2), ('b', 2)])
+    inc 'a' (fromJust (inc 'a' vc)) @?= Just (fromList [('a', 3), ('b', 2)])
+    inc 'b' vc @?= Just (fromList [('a', 1), ('b', 3)])
+    inc 'c' vc @?= Nothing
 
 testDelete :: Assertion
 testDelete = do

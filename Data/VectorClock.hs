@@ -8,7 +8,7 @@ module Data.VectorClock (
         -- * Query
         null, size, member, lookup,
         -- * Insertion
-        insert,
+        insert, inc,
         -- * Deletion
         delete,
         -- * Merges
@@ -96,6 +96,12 @@ insert x y vc = vc { clock = go (clock vc) }
         | x' < x    = xy : go xys
         | x' == x   = (x, y) : xys
         | otherwise = (x, y) : xy : xys
+
+-- | Increment the entry for a key.
+inc :: (Ord a, Num b, Monad m) => a -> VectorClock a b -> m (VectorClock a b)
+inc x vc = case lookup x vc of
+             Nothing -> fail "not found"
+             Just y  -> return (insert x (y + fromInteger 1) vc)
 
 -- | Combine two vector clocks entry-by-entry.
 combine :: (Ord a, Ord b)
