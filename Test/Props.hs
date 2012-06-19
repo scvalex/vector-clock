@@ -83,6 +83,8 @@ testInc = do
     inc 'a' (fromJust (inc 'a' vc)) @?= Just (fromList [('a', 3), ('b', 2)])
     inc 'b' vc @?= Just (fromList [('a', 1), ('b', 3)])
     inc 'c' vc @?= Nothing
+    inc' 'c' vc 0 @?= fromList [('c', 1), ('a', 1), ('b', 2)]
+    inc' 'a' vc 0 @?= fromList [('a', 2), ('b', 2)]
 
 testDelete :: Assertion
 testDelete = do
