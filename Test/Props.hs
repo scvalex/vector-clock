@@ -23,6 +23,7 @@ main :: IO ()
 main = defaultMainWithOpts
        [ testCase "size"  testSize
        , testCase "size2" testSize2
+       , testCase "member" testMember
        , testProperty "fromList" propFromList
        , testProperty "binaryId" propBinaryId
        ] opts
@@ -40,13 +41,19 @@ main = defaultMainWithOpts
 
 testSize :: Assertion
 testSize = do
-  null empty             @?= True
-  null (singleton 'a' 1) @?= False
+    null empty             @?= True
+    null (singleton 'a' 1) @?= False
 
 testSize2 :: Assertion
 testSize2 = do
-    size empty             @?= 0
-    size (singleton 'a' 1) @?= 1
+    size empty                           @?= 0
+    size (singleton 'a' 1)               @?= 1
+    size (fromList [('a', 1), ('b', 1)]) @?= 2
+
+testMember :: Assertion
+testMember = do
+    member 'a' (fromList [('a', 1), ('b', 2)]) @?= True
+    member 'c' (fromList [('a', 1), ('b', 2)]) @?= False
 
 --------------------------------
 -- QuickCheck properties

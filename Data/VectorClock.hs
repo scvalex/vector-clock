@@ -86,11 +86,9 @@ delete x = snd . extract x
 
 -- | Insert or replace the entry for a key.
 insert :: (Ord a) => a -> b -> VectorClock a b -> VectorClock a b
-insert x y vc =
-    let xys' = go (clock vc)
-    in vc { clock = reverse xys' }
+insert x y vc = vc { clock = go (clock vc) }
   where
-    go [] = []
+    go [] = [(x, y)]
     go (xy@(x', _) : xys)
         | x' < x    = xy : go xys
         | x' == x   = (x, y) : xys
@@ -131,21 +129,17 @@ relation vc1 vc2 = go (clock vc1) (clock vc2)
     go _ [] = Concurrent
     go (xy@(x, y) : xys) (xy'@(x', y') : xys')
         | x < x'    = go xys (xy' : xys')
-        | x == x'   = (if y < y' then checkCausedBy else checkCauses) xys xys'
+        | x == x'   =
+            if y < y'
+            then if checkCauses xys' xys then CausedBy else Concurrent
+            else if checkCauses xys xys' then Causes else Concurrent
         | otherwise = go (xy : xys) xys'
 
-    checkCauses _ [] = Causes
-    checkCauses [] _ = Causes
+    checkCauses _ [] = True
+    checkCauses [] _ = True
     checkCauses (xy@(x, y) : xys) (xy'@(x', y') : xys')
         | x < x'    = checkCauses xys (xy' : xys')
-        | x == x'   = if y > y' then checkCauses xys xys' else Concurrent
-        | otherwise = checkCauses (xy : xys) xys'
-
-    checkCausedBy _ [] = CausedBy
-    checkCausedBy [] _ = CausedBy
-    checkCausedBy (xy@(x, y) : xys) (xy'@(x', y') : xys')
-        | x < x'    = checkCauses xys (xy' : xys')
-        | x == x'   = if y < y' then checkCauses xys xys' else Concurrent
+        | x == x'   = if y > y' then checkCauses xys xys' else False
         | otherwise = checkCauses (xy : xys) xys'
 
 -- | Check whether the vector clock is valid or not.
