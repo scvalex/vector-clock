@@ -16,3 +16,4 @@ vector-clock
    - [ ] VectorClock.diff
    - [X] VectorClock.relation
    - [ ] VectorClock.fold2
+   - [ ] VectorClock.inc
