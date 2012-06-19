@@ -1,6 +1,15 @@
 News
 ====
 
+v0.1.1
+------
+
+Maintenance release for v0.1.0:
+
+  - export `Relation` so that the library is actually usable
+  - more tests
+  - fix a number of bugs uncovered by the tests
+
 v0.1.0
 ------
 
