@@ -67,9 +67,12 @@ size = length . clock
 extract :: (Ord a) => a -> VectorClock a b -> (Maybe b, VectorClock a b)
 extract x vc =
     case span (\(x', _) -> x' < x) (clock vc) of
-      (_, [])                    -> (Nothing, vc)
-      (xys, xys'@((x', y') : _)) -> ( if x' == x then Just y' else Nothing
-                                    , vc { clock = xys ++ xys' } )
+      (_, []) ->
+          (Nothing, vc)
+      (xys, xys'@((x', y') : xys'')) ->
+          if x' == x
+          then (Just y', vc { clock = xys ++ xys'' })
+          else (Nothing, vc { clock = xys ++ xys' })
 
 -- | Lookup the value for a key in the vector clock.
 lookup :: (Ord a) => a -> VectorClock a b -> Maybe b
@@ -92,7 +95,7 @@ insert x y vc = vc { clock = go (clock vc) }
     go (xy@(x', _) : xys)
         | x' < x    = xy : go xys
         | x' == x   = (x, y) : xys
-        | otherwise = xy : xys
+        | otherwise = (x, y) : xy : xys
 
 -- | Combine two vector clocks entry-by-entry.
 combine :: (Ord a, Ord b)
