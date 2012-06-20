@@ -29,6 +29,7 @@ main = defaultMainWithOpts
        , testCase "insert" testInsert
        , testCase "inc" testInc
        , testCase "delete" testDelete
+       , testCase "combine" testCombine
        , testProperty "fromList" propFromList
        , testProperty "binaryId" propBinaryId
        , testProperty "maxNotCauses" propMaxNotCauses
@@ -95,6 +96,20 @@ testDelete = do
     delete 'a' (delete 'b' vc) @?= empty
     delete 'c' vc @?= vc
     delete 'a' (empty :: VectorClock Char Int) @?= empty
+
+testCombine :: Assertion
+testCombine = do
+    let vc1 = fromList [('a', 1), ('b', 2)]
+    let vc2 = fromList [('c', 3), ('b', 4)]
+    let first_vc = \_ x _ -> x
+    let second_vc = \_ _ x -> x
+    let neither_vc = \_ _ _ -> Nothing
+    combine first_vc vc1 vc2 @?= vc1
+    combine second_vc vc1 vc2 @?= vc2
+    combine neither_vc vc1 vc2 @?= empty
+    max empty vc1 @?= vc1
+    max vc2 empty @?= vc2
+    max vc1 vc2 @?= fromList [('a', 1), ('b', 4), ('c', 3)]
 
 --------------------------------
 -- QuickCheck properties
