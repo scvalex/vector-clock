@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections, Safe #-}
 
 module Data.VectorClock (
         -- * Vector clock type
