@@ -14,7 +14,7 @@ module Data.VectorClock (
         -- * Merges
         combine, max,
         -- * Relations
-        Relation(..), relation,
+        Relation(..), relation, causes,
         -- * Debugging
         valid
     ) where
@@ -141,22 +141,24 @@ relation vc1 vc2 = go (clock vc1) (clock vc2)
   where
     go [] _ = Concurrent
     go _ [] = Concurrent
-    go (xy@(x, y) : xys) (xy'@(x', y') : xys')
-        | x < x'    = go xys (xy' : xys')
+    go ((x, y) : xys) ((x', y') : xys')
         | x == x'   =
             if y == y'
             then go xys xys'
             else if y < y'
                  then if checkCauses xys xys' then Causes else Concurrent
                  else if checkCauses xys' xys then CausedBy else Concurrent
-        | otherwise = go (xy : xys) xys'
+        | otherwise = Concurrent
 
-    checkCauses _ [] = True
-    checkCauses [] _ = True
-    checkCauses (xy@(x, y) : xys) (xy'@(x', y') : xys')
-        | x < x'    = checkCauses xys (xy' : xys')
+    checkCauses _ [] = False
+    checkCauses [] _ = False
+    checkCauses ((x, y) : xys) ((x', y') : xys')
         | x == x'   = if y > y' then checkCauses xys xys' else False
-        | otherwise = checkCauses (xy : xys) xys'
+        | otherwise = False
+
+-- | Short-hand for @relation vc1 vc2 == Causes@.
+causes :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Bool
+causes vc1 vc2 = relation vc1 vc2 == Causes
 
 -- | Check whether the vector clock is valid or not.
 valid :: (Ord a, Ord b) => VectorClock a b -> Bool

@@ -34,6 +34,8 @@ main = defaultMainWithOpts
        , testProperty "binaryId" propBinaryId
        , testProperty "maxNotCauses" propMaxNotCauses
        , testProperty "relationInverse" propRelationInverse
+       , testProperty "maxCommutative" propMaxCommutative
+       , testProperty "relationTransitive" propRelationTransitive
        ] opts
   where
     opts = mempty {
@@ -138,3 +140,12 @@ propRelationInverse vc1 vc2 =
     if rel == Causes
     then relation vc2 vc1 == CausedBy
     else relation vc2 vc1 == Causes
+
+propMaxCommutative :: VC -> VC -> Bool
+propMaxCommutative vc1 vc2 =
+    max vc1 vc2 == max vc2 vc1
+
+propRelationTransitive :: VC -> VC -> VC -> Property
+propRelationTransitive vc1 vc2 vc3 =
+    vc1 `causes` vc2 && vc2 `causes` vc3 ==>
+    vc1 `causes` vc3
