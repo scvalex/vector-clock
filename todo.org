@@ -9,7 +9,7 @@ vector-clock
    - [ ] Bounded vector clocks
    - [ ] See what safe Haskell is
    - [ ] Tests for all VectorClock functions
-** [2/8]Small
+** [3/8]Small
    - [ ] Usage example in README
    - [ ] Usage example in VectorClock
    - [ ] Write down complexity in docs
@@ -17,4 +17,4 @@ vector-clock
    - [X] VectorClock.relation
    - [ ] VectorClock.fold2
    - [X] VectorClock.inc
-   - [ ] Not just maybe
+   - [X] Not just maybe; not a good idea

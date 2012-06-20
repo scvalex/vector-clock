@@ -71,7 +71,7 @@ extract x vc =
           (Nothing, vc)
       (xys, xys'@((x', y') : xys'')) ->
           if x' == x
-          then (Just y', vc { clock = xys ++ xys'' })
+          then (return y', vc { clock = xys ++ xys'' })
           else (Nothing, vc { clock = xys ++ xys' })
 
 -- | Lookup the value for a key in the vector clock.
@@ -98,10 +98,8 @@ insert x y vc = vc { clock = go (clock vc) }
         | otherwise = (x, y) : xy : xys
 
 -- | Increment the entry for a key.
-inc :: (Ord a, Num b, Monad m) => a -> VectorClock a b -> m (VectorClock a b)
-inc x vc = case lookup x vc of
-             Nothing -> fail "not found"
-             Just y  -> return (insert x (y + fromInteger 1) vc)
+inc :: (Ord a, Num b) => a -> VectorClock a b -> Maybe (VectorClock a b)
+inc x vc = lookup x vc >>= \y -> return (insert x (y + fromInteger 1) vc)
 
 -- | Increment the entry for a key.  If the key does not exist, assume
 -- it was the default.
