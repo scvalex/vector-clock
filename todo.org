@@ -4,12 +4,12 @@ vector-clock
 ** [/] Big
    - [ ] O(1) everything
    - [ ] Low-level optimised code
-** [2/5] Medium
+** [3/5] Medium
    - [ ] Approximate vector clocks
    - [ ] Bounded vector clocks
    - [X] See what safe Haskell is
    - [X] Tests for all VectorClock functions
-   - [ ] Test based on changes, rather than fresh VCs
+   - [X] Test based on changes, rather than fresh VCs
 ** [3/8]Small
    - [ ] Usage example in README
    - [ ] Usage example in VectorClock

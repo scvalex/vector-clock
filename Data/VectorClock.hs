@@ -8,7 +8,7 @@ module Data.VectorClock (
         -- * Query
         null, size, member, lookup, toList,
         -- * Insertion
-        insert, inc, inc',
+        insert, inc, incWithDefault,
         -- * Deletion
         delete,
         -- * Merges
@@ -108,10 +108,12 @@ inc x vc = lookup x vc >>= \y -> return (insert x (y + fromInteger 1) vc)
 
 -- | Increment the entry for a key.  If the key does not exist, assume
 -- it was the default.
-inc' :: (Ord a, Num b) => a -> VectorClock a b -> b -> VectorClock a b
-inc' x vc y' = case lookup x vc of
-             Nothing -> insert x (y' + fromInteger 1) vc
-             Just y  -> insert x (y + fromInteger 1) vc
+incWithDefault :: (Ord a, Num b)
+               => a -> VectorClock a b -> b -> VectorClock a b
+incWithDefault x vc y' =
+    case lookup x vc of
+      Nothing -> insert x (y' + fromInteger 1) vc
+      Just y  -> insert x (y + fromInteger 1) vc
 
 -- | Combine two vector clocks entry-by-entry.
 combine :: (Ord a, Ord b)
@@ -144,8 +146,6 @@ max = combine maxEntry
 relation :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Relation
 relation vc1 vc2 = go (clock vc1) (clock vc2)
   where
-    go [] _ = Concurrent
-    go _ [] = Concurrent
     go ((x, y) : xys) ((x', y') : xys')
         | x == x'   =
             if y == y'
@@ -154,12 +154,13 @@ relation vc1 vc2 = go (clock vc1) (clock vc2)
                  then if checkCauses xys xys' then Causes else Concurrent
                  else if checkCauses xys' xys then CausedBy else Concurrent
         | otherwise = Concurrent
+    go _ _ = Concurrent
 
-    checkCauses _ [] = False
-    checkCauses [] _ = False
+    checkCauses [] [] = True
     checkCauses ((x, y) : xys) ((x', y') : xys')
-        | x == x'   = if y > y' then checkCauses xys xys' else False
+        | x == x'   = if y <= y' then checkCauses xys xys' else False
         | otherwise = False
+    checkCauses _ _ = False
 
 -- | Short-hand for @relation vc1 vc2 == Causes@.
 causes :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Bool

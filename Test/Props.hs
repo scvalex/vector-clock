@@ -3,6 +3,9 @@
 module Main where
 
 import Prelude hiding ( null, lookup, max )
+import qualified Prelude
+
+import Control.Applicative ( (<$>) )
 
 import Data.Binary ( encode, decode )
 import Data.Maybe ( fromJust )
@@ -19,6 +22,12 @@ type VC = VectorClock Char Int
 
 instance (Arbitrary a, Ord a, Arbitrary b) => Arbitrary (VectorClock a b) where
     arbitrary = arbitrary >>= return . fromList
+
+newtype Mutation = Mutation Int
+    deriving ( Show )
+
+instance Arbitrary Mutation where
+    arbitrary = Mutation <$> (choose (0, 100))
 
 main :: IO ()
 main = defaultMainWithOpts
@@ -86,8 +95,8 @@ testInc = do
     inc 'a' (fromJust (inc 'a' vc)) @?= Just (fromList [('a', 3), ('b', 2)])
     inc 'b' vc @?= Just (fromList [('a', 1), ('b', 3)])
     inc 'c' vc @?= Nothing
-    inc' 'c' vc 0 @?= fromList [('c', 1), ('a', 1), ('b', 2)]
-    inc' 'a' vc 0 @?= fromList [('a', 2), ('b', 2)]
+    incWithDefault 'c' vc 0 @?= fromList [('c', 1), ('a', 1), ('b', 2)]
+    incWithDefault 'a' vc 0 @?= fromList [('a', 2), ('b', 2)]
 
 testDelete :: Assertion
 testDelete = do
@@ -132,20 +141,30 @@ propMaxNotCauses vc1 vc2 =
     relation vc1 vcMax /= CausedBy &&
     relation vc2 vcMax /= CausedBy
 
+-- | Increment the entries that correspond to the mutations.
+applyMutations :: VC -> [Mutation] -> VC
+applyMutations vc ms =
+    let sources = map fst $ toList vc in
+    let len = length sources in
+    foldl (\vc' (Mutation m) ->
+               incWithDefault (sources !! (m `mod` len)) vc' 0) vc ms
+
 -- vc1 causes vc2 iff vc2 is caused by vc1
-propRelationInverse :: VC -> VC -> Property
-propRelationInverse vc1 vc2 =
-    let rel = relation vc1 vc2 in
-    rel `elem` [Causes, CausedBy] ==>
-    if rel == Causes
-    then relation vc2 vc1 == CausedBy
-    else relation vc2 vc1 == Causes
+propRelationInverse :: VC -> [Mutation] -> Property
+propRelationInverse vc1 ms =
+    not (null vc1) ==>
+    let vc2 = applyMutations vc1 ms in
+    vc1 `causes` vc2 ==>
+    relation vc2 vc1 == CausedBy
 
 propMaxCommutative :: VC -> VC -> Bool
 propMaxCommutative vc1 vc2 =
     max vc1 vc2 == max vc2 vc1
 
-propRelationTransitive :: VC -> VC -> VC -> Property
-propRelationTransitive vc1 vc2 vc3 =
+propRelationTransitive :: VC -> [Mutation] -> [Mutation] -> Property
+propRelationTransitive vc1 ms1 ms2 =
+    not (null vc1) ==>
+    let vc2 = applyMutations vc1 ms1 in
+    let vc3 = applyMutations vc2 ms2 in
     vc1 `causes` vc2 && vc2 `causes` vc3 ==>
     vc1 `causes` vc3
