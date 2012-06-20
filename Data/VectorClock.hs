@@ -6,7 +6,7 @@ module Data.VectorClock (
         -- * Construction
         empty, singleton, fromList,
         -- * Query
-        null, size, member, lookup,
+        null, size, member, lookup, toList,
         -- * Insertion
         insert, inc, inc',
         -- * Deletion
@@ -53,6 +53,11 @@ singleton x y = VectorClock { clock = [(x, y)] }
 -- | Insert each entry in the list one at a time.
 fromList :: (Ord a) => [(a, b)] -> VectorClock a b
 fromList = foldl' (\vc (x, y) -> insert x y vc) empty
+
+-- | All the entries in the vector clock.  Note that this is /not/ the
+-- inverse of 'fromList'.
+toList :: VectorClock a b -> [(a, b)]
+toList = clock
 
 -- | Is the vector clock empty?
 null :: VectorClock a b -> Bool
