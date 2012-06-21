@@ -3,11 +3,10 @@ vector-clock
 
 > Vector clocks in Haskell
 
-
 Examples
 --------
 
-
+See the [Hackage](http://hackage.haskell.org/packages/archive/vector-clock/latest/doc/html/Data-VectorClock.html) pages for each module for usage examples.
 
 Installation
 ------------

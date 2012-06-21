@@ -1,6 +1,11 @@
 {-# LANGUAGE TupleSections #-}
 
+-- | A vector clock implementation in terms of simply-linked lists.
+
 module Data.VectorClock.Simple (
+        -- * Usage example
+        -- $example
+
         -- * Vector clock type
         VectorClock,
         -- * Construction
@@ -25,6 +30,45 @@ import qualified Prelude
 import Data.Binary ( Binary(..) )
 import Data.List ( foldl', sort, nub )
 import Data.Maybe ( isJust, catMaybes )
+
+-- $example
+--
+-- To create a vector clock, start from 'empty' and 'insert' elements
+-- into it.  As a shortcut, 'fromList' just inserts all the elements
+-- in a list, in order.
+--
+-- > let vc = empty in
+-- > let vc' = insert 'a' 1 vc in
+-- > let vc'' = insert 'b' 2 vc in
+-- > vc'' == fromList [('a', 1), ('b', 2)]
+--
+-- Note that, /for different keys/, the order of insertion does not
+-- matter:
+--
+-- > fromList [('a', 1), ('b', 2)] == fromList [('b', 2), ('a', 1)]
+--
+-- Once you have a given vector clock, you can 'lookup' its fields,
+-- check that keys are 'member's, or convert it back 'toList' form.
+--
+-- > lookup 'a' [('a', 1), ('b', 2)] == Just 1
+-- > lookup 'c' [('a', 1), ('b', 2)] == Nothing
+--
+-- The main operations that you would do with a vector clcok are to
+-- 'inc'crement the entry corresponding to the current process and to
+-- update the process's vector clock with the 'max' of its and the
+-- received message's clocks.
+--
+-- > inc 'a' [('a', 1), ('b', 2)] = Just [('a', 2), ('b', 2)]
+-- > max [('a', 1), ('b', 2)] [('c', 3), ('b', 1)] == [('a', 1), ('b', 2), ('c' 3)]
+--
+-- Finally, upon receiving different messages, you may wish to
+-- discover the 'relation'ship, if any, between them.  This
+-- information could be useful in determining the correct order to
+-- process the messages.
+--
+-- > relation (fromList [('a', 1), ('b', 2)]) (fromList [('a', 2), ('b', 2)]) == Causes
+-- > relation (fromList [('a', 2), ('b', 2)]) (fromList [('a', 1), ('b', 2)]) == CausedBy
+-- > relation (fromList [('a', 2), ('b', 2)]) (fromList [('a', 1), ('b', 3)]) == Concurrent
 
 -- | A vector clock is, conceptually, an associtive list sorted by the
 -- value of the key, where each key appears only once.
