@@ -39,6 +39,7 @@ main = defaultMainWithOpts
        , testCase "inc" testInc
        , testCase "delete" testDelete
        , testCase "combine" testCombine
+       , testCase "relation" testRelation
        , testProperty "fromList" propFromList
        , testProperty "binaryId" propBinaryId
        , testProperty "maxNotCauses" propMaxNotCauses
@@ -121,6 +122,17 @@ testCombine = do
     max empty vc1 @?= vc1
     max vc2 empty @?= vc2
     max vc1 vc2 @?= fromList [('a', 1), ('b', 4), ('c', 3)]
+
+testRelation :: Assertion
+testRelation = do
+    let vc = fromList [('a', 1), ('b', 2)]
+    vc `causes` fromList [('a', 1), ('b', 3)] @?= True
+    vc `causes` fromList [('a', 2), ('b', 2)] @?= True
+    vc `causes` fromList [('a', 2), ('b', 3)] @?= True
+    relation vc empty @?= Concurrent
+    relation empty vc @?= Concurrent
+    relation vc vc @?= Concurrent
+    relation (fromList [('a', 1)]) (fromList [('b', 2)]) @?= Concurrent
 
 --------------------------------
 -- QuickCheck properties
