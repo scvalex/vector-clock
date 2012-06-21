@@ -45,13 +45,14 @@ main = defaultMainWithOpts
        , testProperty "maxNotCauses" propMaxNotCauses
        , testProperty "relationInverse" propRelationInverse
        , testProperty "maxCommutative" propMaxCommutative
+       , testProperty "maxInclusive" propMaxInclusive
        , testProperty "relationTransitive" propRelationTransitive
        ] opts
   where
     opts = mempty {
              ropt_test_options =
                  Just (mempty
-                       { topt_maximum_generated_tests            = Just 100
+                       { topt_maximum_generated_tests            = Just 500
                        , topt_maximum_unsuitable_generated_tests = Just 5000
                        })}
 
@@ -161,7 +162,7 @@ applyMutations vc ms =
     foldl (\vc' (Mutation m) ->
                incWithDefault (sources !! (m `mod` len)) vc' 0) vc ms
 
--- vc1 causes vc2 iff vc2 is caused by vc1
+-- @vc1@ causes @vc2@ iff @vc2@ is caused by @vc1@
 propRelationInverse :: VC -> [Mutation] -> Property
 propRelationInverse vc1 ms =
     not (null vc1) ==>
@@ -172,6 +173,12 @@ propRelationInverse vc1 ms =
 propMaxCommutative :: VC -> VC -> Bool
 propMaxCommutative vc1 vc2 =
     max vc1 vc2 == max vc2 vc1
+
+-- @max vc1 vc2@ should include all the keys of @vc1@ and @vc2@.
+propMaxInclusive :: VC -> VC -> Bool
+propMaxInclusive vc1 vc2 =
+    let vcMax = max vc1 vc2 in
+    all (\(key, _) -> key `member` vcMax) (toList vc1 ++ toList vc2)
 
 propRelationTransitive :: VC -> [Mutation] -> [Mutation] -> Property
 propRelationTransitive vc1 ms1 ms2 =
