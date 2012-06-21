@@ -32,7 +32,8 @@ Source-repository head
 
 Library
   Build-Depends:        base >= 4 && <5, binary
-  Ghc-Options:          -Wall -XSafe
+  Ghc-Options:          -Wall
+  Extensions:           Safe
   Exposed-Modules:      Data.VectorClock, Data.VectorClock.Simple
 
 Test-suite props
