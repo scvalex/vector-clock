@@ -1,5 +1,5 @@
 Name:           vector-clock
-Version:        0.1.1
+Version:        0.1.2
 Cabal-Version:  >= 1.8
 License:        GPL-3
 License-File:   LICENSE
@@ -16,8 +16,8 @@ Description:
         messages and determine causality relations between them in
         a distributed system.
         .
-        See "Fundamentals of Distributed Computing: A Practical Tour
-        of Vector Clock Systems" by R. Baldoni and M. Raynal for an
+        See @Fundamentals of Distributed Computing: A Practical Tour
+        of Vector Clock Systems@ by R. Baldoni and M. Raynal for an
         overview of vector clocks.
         .
         See the README.md file for details.
