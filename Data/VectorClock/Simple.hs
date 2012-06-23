@@ -153,7 +153,12 @@ inc x vc = lookup x vc >>= \y -> return (insert x (y + fromInteger 1) vc)
 -- | /O(N)/.  Increment the entry for a key.  If the key does not
 -- exist, assume it was the default.
 incWithDefault :: (Ord a, Num b)
-               => a -> VectorClock a b -> b -> VectorClock a b
+               => a               -- ^ /key/: the key of the entry
+               -> VectorClock a b -- ^ /vc/: the vector clock
+               -> b               -- ^ /default/: if the key is not
+                                  -- found, assume its value was the
+                                  -- /default/ and increment that
+               -> VectorClock a b
 incWithDefault x vc y' =
     case lookup x vc of
       Nothing -> insert x (y' + fromInteger 1) vc
@@ -162,8 +167,13 @@ incWithDefault x vc y' =
 -- | /O(max(N, M))/.  Combine two vector clocks entry-by-entry.
 combine :: (Ord a, Ord b)
         => (a -> Maybe b -> Maybe b -> Maybe b)
-        -> VectorClock a b
-        -> VectorClock a b
+    -- ^ a function that takes the /key/, the value of the entry in
+    -- the left hand vector clock, if it exists, the value in the
+    -- right hand vector clock, if it exists, and, if it wishes to
+    -- keep a value for this /key/ in the resulting vector clock,
+    -- returns it.
+        -> VectorClock a b      -- ^ /lhs/: the left hand vector clock
+        -> VectorClock a b      -- ^ /rhs/: the right hand vector clock
         -> VectorClock a b
 combine f vc1 vc2 =
     VectorClock { clock = catMaybes (go (clock vc1) (clock vc2)) }

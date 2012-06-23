@@ -7,30 +7,38 @@ module Data.VectorClock.Approximate (
         -- * Vector clock type
         VectorClock,
         -- * Construction
-        empty, singleton, fromList,
+        empty, singleton, fromList, toList,
         -- * Query
         null, size, member, lookup,
         -- * Insertion
         insert, inc, incWithDefault,
         -- * Deletion
-        delete
+        delete,
+        -- * Merges
+        combine, max,
+        -- * Relations
+        Relation(..), relation, causes,
+        -- * Debugging
+        valid
     ) where
 
-import Prelude hiding ( null, lookup )
+import Prelude hiding ( null, lookup, max )
+import qualified Prelude
 
 import Data.Binary ( Binary(..) )
 import Data.Hashable ( Hashable(..) )
 import Data.List ( foldl' )
 
+import Data.VectorClock.Simple ( Relation(..) )
 import qualified Data.VectorClock.Simple as VC
 
 -- | An approximate vector clock is a normal vector clock, but several
--- keys are mapped to the same value.  This can lead to /false
--- positive/ 'relation's.  In other words, the fact that one vector
+-- keys are mapped to the same value.  This can lead to /false/
+-- /positive/ 'relation's.  In other words, the fact that one vector
 -- clock causes another is no longer enough information to say that
--- the one messages causes the other.  That said, experimental results
--- show that approximate vector clocks have good results in practice.
--- See the paper by R. Baldoni and M. Raynal for details.
+-- one message causes the other.  That said, experimental results show
+-- that approximate vector clocks have good results in practice; see
+-- the paper by R. Baldoni and M. Raynal for details.
 data VectorClock a b = VectorClock
     { vcClock :: VC.VectorClock Int b
     , vcSize  :: Int
@@ -65,6 +73,12 @@ fromList :: (Hashable a)
                                 -- in the newly created vector clock
          -> VectorClock a b
 fromList k = foldl' (\vc (x, y) -> insert x y vc) (empty k)
+
+-- | /O(1)/.  All the entries in the vector clock.  Note that this is
+-- /not/ the inverse of 'fromList'.  Note that the keys are returned
+-- /hashed/.
+toList :: VectorClock a b -> [(Int, b)]
+toList = VC.toList . vcClock
 
 -- | /O(1)/.  A vector clock with a single element.
 singleton :: (Hashable a)
@@ -113,7 +127,7 @@ incWithDefault :: (Hashable a, Num b)
                -> VectorClock a b -- ^ /vc/: the vector clock
                -> b               -- ^ /default/: if the key is not
                                   -- found, assume its value was the
-                                  -- default and increment that
+                                  -- /default/ and increment that
                -> VectorClock a b
 incWithDefault x vc@(VectorClock { vcClock = xys, vcSize = k }) y' =
     let xys' = VC.incWithDefault (mapKey x k) xys y' in
@@ -126,6 +140,50 @@ delete x vc@(VectorClock { vcClock = xys, vcSize = k }) =
     let xys' = VC.delete (mapKey x k) xys in
     vc { vcClock = xys' }
 
+-- | /O(max(N, M))/.  Combine two vector clocks entry-by-entry.  The
+-- size of the resulting vector clock is the maximum of the sizes of
+-- the given ones.
+combine :: (Ord b)
+        => (Int -> Maybe b -> Maybe b -> Maybe b)
+    -- ^ a function that takes the hashed /key/, the value of the
+    -- entry in the left hand vector clock, if it exists, the value in
+    -- the right hand vector clock, if it exists, and, if it wishes to
+    -- keep a value for this /key/ in the resulting vector clock,
+    -- returns it.
+        -> VectorClock a b      -- ^ /lhs/: the left hand vector clock
+        -> VectorClock a b      -- ^ /rhs/: the right hand vector clock
+        -> VectorClock a b
+combine f (VectorClock { vcClock = xys1, vcSize = k1 })
+          (VectorClock { vcClock = xys2, vcSize = k2 }) =
+    let xys' = VC.combine f xys1 xys2 in
+    VectorClock { vcClock = xys', vcSize = Prelude.max k1 k2  }
+
+-- | /O(max(N, M))/.  The maximum of the two vector clocks.
+max :: (Ord b)
+    => VectorClock a b
+    -> VectorClock a b
+    -> VectorClock a b
+max = combine maxEntry
+  where
+    maxEntry _ Nothing Nothing    = Nothing
+    maxEntry _ x@(Just _) Nothing = x
+    maxEntry _ Nothing y@(Just _) = y
+    maxEntry _ (Just x) (Just y)  = Just (Prelude.max x y)
+
+-- | /O(min(N, M))/.  The relation between the two vector clocks.
+relation :: (Ord b) => VectorClock a b -> VectorClock a b -> Relation
+relation (VectorClock { vcClock = xys1 }) (VectorClock { vcClock = xys2 }) =
+    VC.relation xys1 xys2
+
+-- | /O(min(N, M))/.  Short-hand for @relation vc1 vc2 == Causes@.
+causes :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Bool
+causes vc1 vc2 = relation vc1 vc2 == Causes
+
 -- | Map a key into the domain of approximate keys.
 mapKey :: (Hashable a) => a -> Int -> Int
 mapKey x k = hash x `mod` k
+
+-- | /O(N)/.  Check whether the vector clock is valid or not.
+valid :: (Ord b) => VectorClock a b -> Bool
+valid vc@(VectorClock { vcClock = xys, vcSize = k }) =
+    size vc <= k && VC.valid xys
