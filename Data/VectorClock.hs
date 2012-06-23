@@ -3,9 +3,10 @@
 -- | A vector clock implementation.
 --
 -- This module re-exports "Data.VectorClock.Simple", which is the
--- fully-featured vector clock library.  As time goes on, other
--- modules may be added to this package to support the various
--- flavours of vector clocks useful to different applications.
+-- fully-featured vector clock library.  If you wish to use
+-- approximate vector clocks, which are significantly smaller and have
+-- bounded size, but are not exact, use "Data.VectorClock.Approximate"
+-- instead.
 --
 -- See @Fundamentals of Distributed Computing: A Practical Tour of
 -- Vector Clock Systems@ by R. Baldoni and M. Raynal for an overview
