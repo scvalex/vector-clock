@@ -4,13 +4,14 @@ vector-clock
 ** [0/2] Big
    - [ ] O(1) everything
    - [ ] Low-level optimised code
-** [5/10] Medium
+** [5/11] Medium
    - [X] Approximate vector clocks
    - [ ] Bounded vector clocks
    - [ ] Traversable instance
    - [ ] Foldable instance
    - [ ] Other instances
    - [ ] Versioned binary
+   - [ ] Tests for VectorClock.Approximate
    - [X] Document parameters
    - [X] See what safe Haskell is
    - [X] Tests for all VectorClock functions

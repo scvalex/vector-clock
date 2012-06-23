@@ -4,6 +4,9 @@
 -- "Data.VectorClock.Simple".
 
 module Data.VectorClock.Approximate (
+        -- * Usage example
+        -- $example
+
         -- * Vector clock type
         VectorClock,
         -- * Construction
@@ -31,6 +34,33 @@ import Data.List ( foldl' )
 
 import Data.VectorClock.Simple ( Relation(..) )
 import qualified Data.VectorClock.Simple as VC
+
+-- $example
+--
+-- See "Data.VectorClock.Simple" for a more detailed example of using
+-- vector clock.
+--
+-- An approximate vector clock, is like a normal one, but maps
+-- multiple keys to the same entry.  Concretely, this is done by first
+-- hashing the keys, then using them modulo the vector clock's size.
+-- So, an approximate vector clock of size 1 would map all the keys to
+-- the same entry; an approximate vector clock of size 2 would map
+-- roughly half its keys to the first entry, and half to the second
+-- entry.
+--
+-- To create an approximate vector clock, start from 'empty' and
+-- 'insert' elements into it.  As a shortcut, 'fromList' just inserts
+-- all the elements in a list, in order.  You must also specify the
+-- vector clock's maximum size when creating it.  Experimental results
+-- suggest that small maximum sizes (e.g. 3 or 4) will yield good
+-- resulsts in practice.  Higher maximum sizes will have no adverse
+-- effects, and will effectively turn approximate vector clocks into
+-- normal ones.
+--
+-- > let vc = empty 4 in
+-- > let vc' = insert 'a' 1 vc in
+-- > let vc'' = insert 'b' 2 vc in
+-- > vc'' == fromList 4 [('a', 1), ('b', 2)]
 
 -- | An approximate vector clock is a normal vector clock, but several
 -- keys are mapped to the same value.  This can lead to /false/
