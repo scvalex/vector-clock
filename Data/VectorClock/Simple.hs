@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE Safe, TupleSections #-}
 
 -- | A vector clock implementation in terms of simply-linked lists.
 
@@ -76,10 +76,10 @@ data VectorClock a b = VectorClock { clock :: [(a, b)] }
                        deriving ( Eq )
 
 instance (Show a, Show b) => Show (VectorClock a b) where
-    show vc = show (clock vc)
+    show = show . clock
 
 instance (Binary a, Binary b) => Binary (VectorClock a b) where
-    put vc = put (clock vc)
+    put = put . clock
     get = get >>= \xys -> return (VectorClock { clock = xys })
 
 -- | The relations two vector clocks may find themselves in.
@@ -91,8 +91,8 @@ empty :: VectorClock a b
 empty = VectorClock { clock = [] }
 
 -- | /O(1)/.  A vector clock with a single element.
-singleton :: a -> b -> VectorClock a b
-singleton x y = VectorClock { clock = [(x, y)] }
+singleton :: (Ord a) => a -> b -> VectorClock a b
+singleton x y = fromList [(x, y)]
 
 -- | /O(N)/.  Insert each entry in the list one at a time.
 fromList :: (Ord a) => [(a, b)] -> VectorClock a b

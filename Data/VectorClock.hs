@@ -1,3 +1,5 @@
+{-# LANGUAGE Safe #-}
+
 -- | A vector clock implementation.
 --
 -- This module re-exports "Data.VectorClock.Simple", which is the

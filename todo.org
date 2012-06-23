@@ -4,17 +4,20 @@ vector-clock
 ** [0/2] Big
    - [ ] O(1) everything
    - [ ] Low-level optimised code
-** [3/9] Medium
+** [3/10] Medium
    - [ ] Approximate vector clocks
    - [ ] Bounded vector clocks
    - [ ] Traversable instance
    - [ ] Foldable instance
    - [ ] Other instances
    - [ ] Versioned binary
+   - [ ] Document parameters
    - [X] See what safe Haskell is
    - [X] Tests for all VectorClock functions
    - [X] Test based on changes, rather than fresh VCs
-** [6/8]Small
+** [6/9]Small
+   - [ ] Once hashable becomes Safe, re-add "Extensions: Safe" to
+     cabal file
    - [X] Usage example in README
    - [X] Usage example in VectorClock
    - [X] Write down complexity in docs
