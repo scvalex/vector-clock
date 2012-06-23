@@ -1,6 +1,14 @@
 News
 ====
 
+v0.2.0
+------
+
+Minor release introducing a new vector clock type:
+
+  - add `Data.VectorClock.Approximate`, an implementation of
+    approximate vector clocks
+
 v0.1.2
 ------
 
