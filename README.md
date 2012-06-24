@@ -1,5 +1,5 @@
 vector-clock
-========
+============
 
 > Vector clocks in Haskell
 
@@ -17,3 +17,4 @@ it, run:
 
     cabal update
     cabal install vector-clock
+
