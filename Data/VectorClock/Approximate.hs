@@ -29,6 +29,7 @@ import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
 import Data.Binary ( Binary(..) )
+import Data.Foldable ( Foldable(..) )
 import Data.Hashable ( Hashable(..) )
 import Data.List ( foldl' )
 
@@ -88,6 +89,12 @@ instance (Binary b) => Binary (VectorClock a b) where
         xys <- get
         k <- get
         return (VectorClock { vcClock = xys, vcSize = k })
+
+instance Foldable (VectorClock a) where
+    foldMap f = foldMap f . vcClock
+
+instance Functor (VectorClock a) where
+    fmap f vc = vc { vcClock = fmap f (vcClock vc) }
 
 -- | /O(1)/.  The empty vector clock.
 empty :: Int                    -- ^ /size/: the maximum number of

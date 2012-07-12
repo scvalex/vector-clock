@@ -28,6 +28,7 @@ import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
 import Data.Binary ( Binary(..) )
+import Data.Foldable ( Foldable(..) )
 import Data.List ( foldl', sort, nub )
 import Data.Maybe ( isJust, catMaybes )
 
@@ -81,6 +82,12 @@ instance (Show a, Show b) => Show (VectorClock a b) where
 instance (Binary a, Binary b) => Binary (VectorClock a b) where
     put = put . clock
     get = get >>= \xys -> return (VectorClock { clock = xys })
+
+instance Foldable (VectorClock a) where
+    foldMap f = foldMap f . map snd . clock
+
+instance Functor (VectorClock a) where
+    fmap f vc = vc { clock = map (\(x, y) -> (x, f y)) (clock vc) }
 
 -- | The relations two vector clocks may find themselves in.
 data Relation = Causes | CausedBy | Concurrent
