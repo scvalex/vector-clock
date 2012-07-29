@@ -5,12 +5,13 @@ module Main where
 import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
-import Control.Applicative ( (<$>) )
-
+import Control.Applicative ( (<$>), (<*>) )
+import qualified Data.Array as A
 import Data.Binary ( encode, decode )
 import Data.Maybe ( fromJust )
 import Data.Monoid
 import Data.VectorClock
+import Text.Interpol ( (^-^) )
 
 import Test.Framework
 import Test.Framework.Providers.HUnit
@@ -23,11 +24,16 @@ type VC = VectorClock Char Int
 instance (Arbitrary a, Ord a, Arbitrary b) => Arbitrary (VectorClock a b) where
     arbitrary = arbitrary >>= return . fromList
 
-newtype Mutation = Mutation Int
-    deriving ( Show )
+data Mutation = Increment Int
+              | Add Char Int
+                deriving ( Show )
 
 instance Arbitrary Mutation where
-    arbitrary = Mutation <$> (choose (0, 100))
+    arbitrary = do
+      x <- choose (0, 5)
+      if x < (5 :: Int)
+        then Increment <$> (choose (0, 100))
+        else Add <$> (choose ('a', 'z')) <*> (choose (0, 100))
 
 main :: IO ()
 main = defaultMainWithOpts
@@ -47,6 +53,7 @@ main = defaultMainWithOpts
        , testProperty "relationInverse" propRelationInverse
        , testProperty "maxCommutative" propMaxCommutative
        , testProperty "maxInclusive" propMaxInclusive
+       , testProperty "mutationRelation" propMutationRelation
        , testProperty "relationTransitive" propRelationTransitive
        , testProperty "diffMax" propDiffMax
        ] opts
@@ -128,17 +135,18 @@ testCombine = do
 
 testRelation :: Assertion
 testRelation = do
-    let vc = fromList [('a', 1), ('b', 2)]
-    vc `causes` fromList [('a', 1), ('b', 3)] @?= True
-    vc `causes` fromList [('a', 2), ('b', 2)] @?= True
-    vc `causes` fromList [('a', 2), ('b', 3)] @?= True
-    vc `causes` fromList [('a', 2), ('b', 3), ('c', 4)] @?= True
-    vc `causes` (fromList [('a', 1), ('b', 2), ('c', 4)]) @?= True
+    let vc = fromList [('a', 1), ('d', 2)]
+    vc `causes` fromList [('a', 1), ('d', 3)] @?= True
+    vc `causes` fromList [('a', 2), ('d', 2)] @?= True
+    vc `causes` fromList [('a', 2), ('d', 3)] @?= True
+    vc `causes` fromList [('a', 2), ('d', 3), ('c', 4)] @?= True
+    vc `causes` (fromList [('a', 1), ('d', 2), ('c', 4)]) @?= True
+    vc `causes` (fromList [('a', 1), ('d', 2), ('e', 4)]) @?= True
     empty `causes` vc @?= True
     relation vc empty @?= CausedBy
     relation vc vc @?= Causes
-    relation vc (fromList [('a', 1), ('b', 1), ('c', 2)]) @?= Concurrent
-    relation (fromList [('a', 1)]) (fromList [('b', 2)]) @?= Concurrent
+    relation vc (fromList [('a', 1), ('d', 1), ('c', 2)]) @?= Concurrent
+    relation (fromList [('a', 1)]) (fromList [('d', 2)]) @?= Concurrent
 
 testDiff :: Assertion
 testDiff = do
@@ -178,9 +186,16 @@ propMaxNotCauses vc1 vc2 =
 applyMutations :: VC -> [Mutation] -> VC
 applyMutations vc ms =
     let sources = map fst $ toList vc in
-    let len = length sources in
-    foldl (\vc' (Mutation m) ->
-               incWithDefault (sources !! (m `mod` len)) vc' 0) vc ms
+    let sourcesA = A.listArray (0, length sources - 1) sources in
+    foldl (applyOne sourcesA) vc ms
+  where
+    applyOne sourcesA vc' (Increment i) =
+        let source = sourcesA A.! (i `mod` (1 + snd (A.bounds sourcesA))) in
+        incWithDefault source vc' (error ("unknown source: " ^-^ source))
+    applyOne sourcesA vc' (Add source i) =
+        if source `elem` A.elems sourcesA
+        then vc'
+        else insert source i vc'
 
 -- @vc1@ causes @vc2@ iff @vc2@ is caused by @vc1@
 propRelationInverse :: VC -> [Mutation] -> Property
@@ -199,6 +214,11 @@ propMaxInclusive :: VC -> VC -> Bool
 propMaxInclusive vc1 vc2 =
     let vcMax = max vc1 vc2 in
     all (\(key, _) -> key `member` vcMax) (toList vc1 ++ toList vc2)
+
+propMutationRelation :: VC -> [Mutation] -> Bool
+propMutationRelation vc1 ms =
+    let vc2 = applyMutations vc1 ms in
+    vc1 `causes` vc2
 
 propRelationTransitive :: VC -> [Mutation] -> [Mutation] -> Property
 propRelationTransitive vc1 ms1 ms2 =

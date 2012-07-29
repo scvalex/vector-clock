@@ -214,20 +214,23 @@ max = combine maxEntry
 relation :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Relation
 relation vc1 vc2 = go (clock vc1) (clock vc2)
   where
-    go ((x, y) : xys) ((x', y') : xys')
+    go xys@((x, y) : xyt) xys'@((x', y') : xyt')
         | x == x' =
             if y == y'
-            then go xys xys'
+            then go xyt xyt'
             else if y < y'
-                 then if checkCauses xys xys' then Causes else Concurrent
-                 else if checkCauses xys' xys then CausedBy else Concurrent
+                 then if checkCauses xyt xyt' then Causes else Concurrent
+                 else if checkCauses xyt' xyt then CausedBy else Concurrent
+        | x < x' = if checkCauses xys' xyt then CausedBy else Concurrent
+        | x > x' = if checkCauses xys xyt' then Causes else Concurrent
         | otherwise = Concurrent
     go [] _ = Causes
     go _ [] = CausedBy
 
-    checkCauses ((x, y) : xys) ((x', y') : xys')
-        | x == x'   = if y <= y' then checkCauses xys xys' else False
-        | otherwise = False
+    checkCauses xys@((x, y) : xyt) ((x', y') : xyt')
+        | x == x'   = if y <= y' then checkCauses xyt xyt' else False
+        | x < x'    = False
+        | otherwise = checkCauses xys xyt'
     checkCauses [] _ = True
     checkCauses _ _  = False
 
