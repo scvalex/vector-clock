@@ -40,6 +40,7 @@ main = defaultMainWithOpts
        , testCase "delete" testDelete
        , testCase "combine" testCombine
        , testCase "relation" testRelation
+       , testCase "diff" testDiff
        , testProperty "fromList" propFromList
        , testProperty "binaryId" propBinaryId
        , testProperty "maxNotCauses" propMaxNotCauses
@@ -47,6 +48,7 @@ main = defaultMainWithOpts
        , testProperty "maxCommutative" propMaxCommutative
        , testProperty "maxInclusive" propMaxInclusive
        , testProperty "relationTransitive" propRelationTransitive
+       , testProperty "diffMax" propDiffMax
        ] opts
   where
     opts = mempty {
@@ -130,10 +132,26 @@ testRelation = do
     vc `causes` fromList [('a', 1), ('b', 3)] @?= True
     vc `causes` fromList [('a', 2), ('b', 2)] @?= True
     vc `causes` fromList [('a', 2), ('b', 3)] @?= True
-    relation vc empty @?= Concurrent
-    relation empty vc @?= Concurrent
-    relation vc vc @?= Concurrent
+    vc `causes` fromList [('a', 2), ('b', 3), ('c', 4)] @?= True
+    vc `causes` (fromList [('a', 1), ('b', 2), ('c', 4)]) @?= True
+    empty `causes` vc @?= True
+    relation vc empty @?= CausedBy
+    relation vc vc @?= Causes
+    relation vc (fromList [('a', 1), ('b', 1), ('c', 2)]) @?= Concurrent
     relation (fromList [('a', 1)]) (fromList [('b', 2)]) @?= Concurrent
+
+testDiff :: Assertion
+testDiff = do
+    fromList [('a', 2)] `diff` fromList [('a', 2)] @?= Just (fromList [])
+    fromList [('a', 2)] `diff` fromList [('a', 1)] @?= Just (fromList [('a', 2)])
+    fromList [('a', 1), ('b', 2)] `diff` fromList [('a', 1), ('b', 1)]
+           @?= Just (fromList [('b', 2)])
+    fromList [('a', 2), ('b', 1)] `diff` fromList [('a', 1), ('b', 1)]
+           @?= Just (fromList [('a', 2)])
+    fromList [('a', 2), ('b', 1), ('c', 2)] `diff` fromList [('a', 2), ('b', 1)]
+           @?= Just (fromList [('c', 2)])
+    fromList [('a', 1), ('b', 2)] `diff` fromList [('a', 2), ('b', 2)] @?= Nothing
+    fromList [('a', 1), ('b', 2)] `diff` fromList [('a', 2), ('b', 1)] @?= Nothing
 
 --------------------------------
 -- QuickCheck properties
@@ -145,10 +163,12 @@ propFromList vc = valid vc
 propBinaryId :: VC -> Bool
 propBinaryId vc = vc == decode (encode vc)
 
--- @max vc1 vc2@ does not cause either @vc1@ or @vc2@
-propMaxNotCauses :: VC -> VC -> Bool
+-- @max vc1 vc2@ does not cause either @vc1@ or @vc2@, unless @max vc1
+-- vc2@ is either @vc1@ or @vc2@
+propMaxNotCauses :: VC -> VC -> Property
 propMaxNotCauses vc1 vc2 =
     let vcMax = max vc1 vc2 in
+    (vcMax /= vc1 && vcMax /= vc2) ==>
     relation vcMax vc1 /= Causes &&
     relation vcMax vc2 /= Causes &&
     relation vc1 vcMax /= CausedBy &&
@@ -167,7 +187,7 @@ propRelationInverse :: VC -> [Mutation] -> Property
 propRelationInverse vc1 ms =
     not (null vc1) ==>
     let vc2 = applyMutations vc1 ms in
-    vc1 `causes` vc2 ==>
+    vc1 `causes` vc2 && vc1 /= vc2 ==>
     relation vc2 vc1 == CausedBy
 
 propMaxCommutative :: VC -> VC -> Bool
@@ -187,3 +207,12 @@ propRelationTransitive vc1 ms1 ms2 =
     let vc3 = applyMutations vc2 ms2 in
     vc1 `causes` vc2 && vc2 `causes` vc3 ==>
     vc1 `causes` vc3
+
+propDiffMax :: VC -> [Mutation] -> Property
+propDiffMax vc1 ms =
+    not (null vc1) ==>
+    let vc2 = applyMutations vc1 ms in
+    let mvc3 = diff vc2 vc1 in
+    case mvc3 of
+      Nothing  -> False
+      Just vc3 -> max vc3 vc1 == vc2

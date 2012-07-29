@@ -18,7 +18,7 @@ module Data.VectorClock.Approximate (
         -- * Deletion
         delete,
         -- * Merges
-        combine, max,
+        combine, max, diff,
         -- * Relations
         Relation(..), relation, causes,
         -- * Debugging
@@ -220,6 +220,15 @@ relation (VectorClock { vcClock = xys1 }) (VectorClock { vcClock = xys2 }) =
 -- | /O(min(N, M))/.  Short-hand for @relation vc1 vc2 == Causes@.
 causes :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Bool
 causes vc1 vc2 = relation vc1 vc2 == Causes
+
+-- | /O(M)/.  If @vc2 `causes` vc1@, compute the smallest @vc3@
+-- s.t. @max vc3 vc2 == vc1@.  Note that the /first/ parameter is the
+-- newer vector clock.
+diff :: (Ord a, Ord b)
+     => VectorClock a b -> VectorClock a b -> Maybe (VectorClock a b)
+diff vc1 vc2 = do
+  xys <- VC.diff (vcClock vc1) (vcClock vc2)
+  return (vc1 { vcClock = xys })
 
 -- | Map a key into the domain of approximate keys.
 mapKey :: (Hashable a) => a -> Int -> Int

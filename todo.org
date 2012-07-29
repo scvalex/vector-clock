@@ -16,11 +16,12 @@ vector-clock
    - [X] See what safe Haskell is
    - [X] Tests for all VectorClock functions
    - [X] Test based on changes, rather than fresh VCs
-** [6/7]Small
+** [7/8]Small
+   - [ ] Mutations may add entries
    - [X] Usage example in README
    - [X] Usage example in VectorClock
    - [X] Write down complexity in docs
-   - [ ] VectorClock.diff
+   - [X] VectorClock.diff
    - [X] VectorClock.relation
    - [X] VectorClock.inc
    - [X] Not just maybe; not a good idea

@@ -17,7 +17,7 @@ module Data.VectorClock.Simple (
         -- * Deletion
         delete,
         -- * Merges
-        combine, max,
+        combine, max, diff,
         -- * Relations
         Relation(..), relation, causes,
         -- * Debugging
@@ -215,24 +215,39 @@ relation :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Relation
 relation vc1 vc2 = go (clock vc1) (clock vc2)
   where
     go ((x, y) : xys) ((x', y') : xys')
-        | x == x'   =
+        | x == x' =
             if y == y'
             then go xys xys'
             else if y < y'
                  then if checkCauses xys xys' then Causes else Concurrent
                  else if checkCauses xys' xys then CausedBy else Concurrent
         | otherwise = Concurrent
-    go _ _ = Concurrent
+    go [] _ = Causes
+    go _ [] = CausedBy
 
-    checkCauses [] [] = True
     checkCauses ((x, y) : xys) ((x', y') : xys')
         | x == x'   = if y <= y' then checkCauses xys xys' else False
         | otherwise = False
-    checkCauses _ _ = False
+    checkCauses [] _ = True
+    checkCauses _ _  = False
 
 -- | /O(min(N, M))/.  Short-hand for @relation vc1 vc2 == Causes@.
 causes :: (Ord a, Ord b) => VectorClock a b -> VectorClock a b -> Bool
 causes vc1 vc2 = relation vc1 vc2 == Causes
+
+-- | /O(M)/.  If @vc2 `causes` vc1@, compute the smallest @vc3@
+-- s.t. @max vc3 vc2 == vc1@.  Note that the /first/ parameter is the
+-- newer vector clock.
+diff :: (Ord a, Ord b)
+     => VectorClock a b -> VectorClock a b -> Maybe (VectorClock a b)
+diff vc1 vc2 =
+    if vc1 == vc2 then Just (fromList []) else
+    if vc2 `causes` vc1 then Just (combine diffOne vc1 vc2) else Nothing
+  where
+    diffOne _ Nothing  Nothing  = Nothing
+    diffOne _ x        Nothing  = x
+    diffOne _ (Just x) (Just y) = if x == y then Nothing else Just x
+    diffOne _ Nothing  (Just _) = error "diff broken"
 
 -- | /O(N)/.  Check whether the vector clock is valid or not.
 valid :: (Ord a, Ord b) => VectorClock a b -> Bool
