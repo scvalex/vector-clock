@@ -11,4 +11,4 @@ vector-clock
    - [ ] Versioned binary
    - [ ] Tests for VectorClock.Approximate
 ** [0/1]Small
-   - [ ] Small item
+   - [ ] Working Read/Show instances
