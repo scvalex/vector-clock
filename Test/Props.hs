@@ -33,7 +33,7 @@ instance Arbitrary Mutation where
       x <- choose (0, 5)
       if x < (5 :: Int)
         then Increment <$> (choose (0, 100))
-        else Add <$> (choose ('a', 'z')) <*> (choose (0, 100))
+        else Add <$> arbitrary <*> (choose (0, 100))
 
 main :: IO ()
 main = defaultMainWithOpts
