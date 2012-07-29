@@ -27,8 +27,10 @@ module Data.VectorClock.Simple (
 import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
+import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
 import Data.Foldable ( Foldable(..) )
+import Data.Traversable ( Traversable(..) )
 import Data.List ( foldl', sort, nub )
 import Data.Maybe ( isJust, catMaybes )
 
@@ -88,6 +90,11 @@ instance Foldable (VectorClock a) where
 
 instance Functor (VectorClock a) where
     fmap f vc = vc { clock = map (\(x, y) -> (x, f y)) (clock vc) }
+
+instance Traversable (VectorClock a) where
+    traverse f vc =
+        let f' (x, y) = (x,) <$> f y in
+        (\xys -> vc { clock = xys }) <$> traverse f' (clock vc)
 
 -- | The relations two vector clocks may find themselves in.
 data Relation = Causes | CausedBy | Concurrent

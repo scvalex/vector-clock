@@ -28,9 +28,11 @@ module Data.VectorClock.Approximate (
 import Prelude hiding ( null, lookup, max )
 import qualified Prelude
 
+import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
 import Data.Foldable ( Foldable(..) )
 import Data.Hashable ( Hashable(..) )
+import Data.Traversable ( Traversable(..) )
 import Data.List ( foldl' )
 
 import Data.VectorClock.Simple ( Relation(..) )
@@ -95,6 +97,9 @@ instance Foldable (VectorClock a) where
 
 instance Functor (VectorClock a) where
     fmap f vc = vc { vcClock = fmap f (vcClock vc) }
+
+instance Traversable (VectorClock a) where
+    traverse f vc = (\xys -> vc { vcClock = xys }) <$> traverse f (vcClock vc)
 
 -- | /O(1)/.  The empty vector clock.
 empty :: Int                    -- ^ /size/: the maximum number of
