@@ -1,9 +1,10 @@
 vector-clock
 
 * Planned changes
-** [0/2] Big
+** [0/3] Big
    - [ ] O(1) everything
    - [ ] Low-level optimised code
+   - [ ] Tests simulate network
 ** [0/4] Medium
    - [ ] Bounded vector clocks
    - [ ] Other instances
