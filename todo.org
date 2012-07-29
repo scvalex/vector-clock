@@ -16,9 +16,7 @@ vector-clock
    - [X] See what safe Haskell is
    - [X] Tests for all VectorClock functions
    - [X] Test based on changes, rather than fresh VCs
-** [6/8]Small
-   - [ ] Once hashable becomes Safe, re-add "Extensions: Safe" to
-     cabal file
+** [6/7]Small
    - [X] Usage example in README
    - [X] Usage example in VectorClock
    - [X] Write down complexity in docs
