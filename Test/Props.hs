@@ -11,13 +11,12 @@ import Data.Binary ( encode, decode )
 import Data.Maybe ( fromJust )
 import Data.Monoid
 import Data.VectorClock
-import Text.Interpol ( (^-^) )
-
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2
 import Test.HUnit
 import Test.QuickCheck
+import Text.Printf ( printf )
 
 type VC = VectorClock Char Int
 
@@ -191,7 +190,7 @@ applyMutations vc ms =
   where
     applyOne sourcesA vc' (Increment i) =
         let source = sourcesA A.! (i `mod` (1 + snd (A.bounds sourcesA))) in
-        incWithDefault source vc' (error ("unknown source: " ^-^ source))
+        incWithDefault source vc' (error (printf "unknown source: %s" source))
     applyOne sourcesA vc' (Add source i) =
         if source `elem` A.elems sourcesA
         then vc'

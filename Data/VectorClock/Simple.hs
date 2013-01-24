@@ -31,7 +31,7 @@ import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
 import Data.Foldable ( Foldable(..) )
 import Data.Traversable ( Traversable(..) )
-import Data.List ( foldl', sort, nub )
+import Data.List ( sort, nub )
 import Data.Maybe ( isJust, catMaybes )
 
 -- $example

@@ -31,9 +31,8 @@ import qualified Prelude
 import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
 import Data.Foldable ( Foldable(..) )
-import Data.Hashable ( Hashable(..) )
+import Data.Hashable ( Hashable, hash )
 import Data.Traversable ( Traversable(..) )
-import Data.List ( foldl' )
 
 import Data.VectorClock.Simple ( Relation(..) )
 import qualified Data.VectorClock.Simple as VC

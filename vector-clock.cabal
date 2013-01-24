@@ -41,7 +41,7 @@ Test-suite props
   Main-Is:              Props.hs
   Type:                 exitcode-stdio-1.0
 
-  Build-Depends:        array, base >= 4 && <5, binary, hashable, interpol
+  Build-Depends:        array, base >= 4 && <5, binary, hashable
   Ghc-Options:          -Wall
 
   Build-Depends:        test-framework, test-framework-quickcheck2,
