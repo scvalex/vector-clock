@@ -10,7 +10,7 @@ dist:
 	cabal-dev sdist
 
 install: build
-	cabal install
+	cabal install --force-reinstalls
 
 clean:
 	cabal-dev clean
@@ -27,4 +27,4 @@ test: build
 	cabal-dev test
 
 p:
-	permamake.sh $(shell find Ltc/ -name '*.hs') $(shell find Test/ -name '*.hs') *.cabal Makefile
+	permamake.sh $(shell find Data/ -name '*.hs') $(shell find Test/ -name '*.hs') *.cabal Makefile
