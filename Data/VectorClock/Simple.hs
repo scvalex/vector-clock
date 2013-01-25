@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe, TupleSections #-}
+{-# LANGUAGE Safe, TupleSections, DeriveDataTypeable #-}
 
 -- | A vector clock implementation in terms of simply-linked lists.
 
@@ -29,6 +29,7 @@ import qualified Prelude
 
 import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
+import Data.Data ( Data, Typeable )
 import Data.Foldable ( Foldable(..) )
 import Data.Traversable ( Traversable(..) )
 import Data.List ( sort, nub )
@@ -76,7 +77,7 @@ import Data.Maybe ( isJust, catMaybes )
 -- | A vector clock is, conceptually, an associtive list sorted by the
 -- value of the key, where each key appears only once.
 data VectorClock a b = VectorClock { clock :: [(a, b)] }
-                       deriving ( Eq )
+                       deriving ( Eq, Data, Typeable )
 
 instance (Show a, Show b) => Show (VectorClock a b) where
     show = show . clock
