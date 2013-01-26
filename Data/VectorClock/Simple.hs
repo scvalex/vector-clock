@@ -183,8 +183,8 @@ incWithDefault :: (Ord a, Num b)
                -> VectorClock a b
 incWithDefault x vc y' =
     case lookup x vc of
-      Nothing -> insert x (y' + fromInteger 1) vc
-      Just y  -> insert x (y + fromInteger 1) vc
+        Nothing -> insert x (y' + fromInteger 1) vc
+        Just y  -> insert x (y + fromInteger 1) vc
 
 -- | /O(max(N, M))/.  Combine two vector clocks entry-by-entry.
 combine :: (Ord a, Ord b)
