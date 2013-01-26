@@ -17,4 +17,3 @@ it, run:
 
     cabal update
     cabal install vector-clock
-
