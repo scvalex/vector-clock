@@ -1,4 +1,4 @@
-{-# LANGUAGE Trustworthy #-}
+{-# LANGUAGE Trustworthy, DeriveDataTypeable, DeriveGeneric #-}
 
 -- | An approximate vector clock implementation in terms of
 -- "Data.VectorClock.Simple".
@@ -30,9 +30,11 @@ import qualified Prelude
 
 import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
+import Data.Data ( Data, Typeable )
 import Data.Foldable ( Foldable(..) )
 import Data.Hashable ( Hashable, hash )
 import Data.Traversable ( Traversable(..) )
+import GHC.Generics ( Generic )
 
 import Data.VectorClock.Simple ( Relation(..) )
 import qualified Data.VectorClock.Simple as VC
@@ -74,7 +76,7 @@ import qualified Data.VectorClock.Simple as VC
 data VectorClock a b = VectorClock
     { vcClock :: VC.VectorClock Int b
     , vcSize  :: Int
-    }
+    } deriving ( Data, Typeable, Generic )
 
 instance (Eq b) => Eq (VectorClock a b) where
     vc1 == vc2 = vcClock vc1 == vcClock vc2

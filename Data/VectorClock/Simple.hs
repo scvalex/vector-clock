@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe, TupleSections, DeriveDataTypeable #-}
+{-# LANGUAGE Safe, TupleSections, DeriveDataTypeable, DeriveGeneric #-}
 
 -- | A vector clock implementation in terms of simply-linked lists.
 
@@ -34,6 +34,7 @@ import Data.Foldable ( Foldable(..) )
 import Data.Traversable ( Traversable(..) )
 import Data.List ( sort, nub )
 import Data.Maybe ( isJust, catMaybes )
+import GHC.Generics ( Generic )
 
 -- $example
 --
@@ -73,11 +74,17 @@ import Data.Maybe ( isJust, catMaybes )
 -- > relation (fromList [('a', 1), ('b', 2)]) (fromList [('a', 2), ('b', 2)]) == Causes
 -- > relation (fromList [('a', 2), ('b', 2)]) (fromList [('a', 1), ('b', 2)]) == CausedBy
 -- > relation (fromList [('a', 2), ('b', 2)]) (fromList [('a', 1), ('b', 3)]) == Concurrent
+--
+-- In order to send and receive vector clocks, they must first be
+-- serialized.  For this purpose, there is a 'Binary' instance for
+-- 'VectorClock'.  Additionally, there are 'Data', 'Typeable', and
+-- 'Generic' instances, which allow packages such as @cereal@, and
+-- @sexp@ to automatically generate serializers and deserializers.
 
 -- | A vector clock is, conceptually, an associtive list sorted by the
 -- value of the key, where each key appears only once.
 data VectorClock a b = VectorClock { clock :: [(a, b)] }
-                       deriving ( Eq, Data, Typeable )
+                     deriving ( Eq, Data, Generic, Typeable )
 
 instance (Show a, Show b) => Show (VectorClock a b) where
     show = show . clock
