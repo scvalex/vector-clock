@@ -1,6 +1,11 @@
 News
 ====
 
+v0.2.1
+------
+
+Minor release fixing a compatibility issue with the latest `hashable`.
+
 v0.2.0
 ------
 
