@@ -29,4 +29,7 @@ test: build
 	$(CABAL) test
 
 p:
-	permamake.sh $(shell find Data/ -name '*.hs') $(shell find Test/ -name '*.hs') *.cabal Makefile
+	permamake.sh $(shell find src/ -name '*.hs') \
+                     $(shell find test/ -name '*.hs') \
+                     *.cabal \
+                     Makefile
