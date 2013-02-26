@@ -31,18 +31,17 @@ Source-repository head
   Location:             git://github.com/scvalex/vector-clock.git
 
 Library
+  Hs-Source-Dirs:       src
   Build-Depends:        base >= 4 && <5, binary, hashable
   Ghc-Options:          -Wall
   Exposed-Modules:      Data.VectorClock, Data.VectorClock.Simple,
                         Data.VectorClock.Approximate
 
 Test-suite props
-  Hs-Source-Dirs:       Test, .
+  Hs-Source-Dirs:       test
   Main-Is:              Props.hs
   Type:                 exitcode-stdio-1.0
-
-  Build-Depends:        array, base >= 4 && <5, binary, hashable
   Ghc-Options:          -Wall
-
-  Build-Depends:        test-framework, test-framework-quickcheck2,
+  Build-Depends:        array, base >= 4 && <5, binary, vector-clock,
+                        test-framework, test-framework-quickcheck2,
                         test-framework-hunit, QuickCheck, HUnit
