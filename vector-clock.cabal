@@ -32,17 +32,27 @@ Source-repository head
 
 Library
   Hs-Source-Dirs:       src
-  Build-Depends:        base >= 4 && <5, binary, ghc-prim, hashable
+  Build-Depends:        base >= 4 && <5,
+                        binary,
+                        ghc-prim,
+                        hashable
   Ghc-Options:          -Wall
-  Exposed-Modules:      Data.VectorClock, Data.VectorClock.Simple,
-                        Data.VectorClock.Approximate
+  Exposed-Modules:      Data.VectorClock,
+                        Data.VectorClock.Approximate,
+                        Data.VectorClock.Simple
 
 Test-suite props
   Hs-Source-Dirs:       test
   Main-Is:              Props.hs
   Type:                 exitcode-stdio-1.0
   Ghc-Options:          -Wall
-  Build-Depends:        array, base >= 4 && <5, binary, ghc-prim,
-                        vector-clock,
-                        test-framework, test-framework-quickcheck2,
-                        test-framework-hunit, QuickCheck, HUnit
+  Build-Depends:        array,
+                        base >= 4 && <5,
+                        binary,
+                        ghc-prim,
+                        HUnit,
+                        QuickCheck,
+                        test-framework,
+                        test-framework-hunit,
+                        test-framework-quickcheck2,
+                        vector-clock
