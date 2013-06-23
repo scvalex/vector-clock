@@ -16,6 +16,7 @@ install: build
 
 clean:
 	$(CABAL) clean
+	rm -rf cabal-dev/
 
 dist/setup-config: vector-clock.cabal
 # If you don't have all the necessary packages installed on the first
