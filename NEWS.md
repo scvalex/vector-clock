@@ -1,6 +1,11 @@
 News
 ====
 
+v0.2.2
+------
+
+Minor release fixing compatibility issues with older versions of GHC.
+
 v0.2.1
 ------
 
