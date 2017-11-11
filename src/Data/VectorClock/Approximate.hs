@@ -31,7 +31,7 @@ import qualified Prelude
 import Control.Applicative ( (<$>) )
 import Data.Binary ( Binary(..) )
 import Data.Data ( Data, Typeable )
-import Data.Foldable ( Foldable(..), foldl' )
+import Data.Foldable ( Foldable(foldMap), foldl' )
 import Data.Hashable ( Hashable, hash )
 import Data.Traversable ( Traversable(..) )
 import GHC.Generics ( Generic )
